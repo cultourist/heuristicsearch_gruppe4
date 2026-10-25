@@ -111,7 +111,7 @@ def calculate_misplaced_tiles(state_board, goal_board):  # Zaehlt falsch platzie
 # 4. LOESBARKEIT DURCH INVERSIONEN PRUEFEN
 # ============================================================
 
-def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (1,2,3,4,5,6,7,8,0).
+def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (0,1,2,3,4,5,6,7,8).
     numbers = []  # Speichert alle Zahlen ohne die Leerstelle.
 
     for tile in board:  # Geht die neun Werte durch.
@@ -122,7 +122,7 @@ def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (1,2,3,4,5,6,7,8,0).
 
     for left_index in range(len(numbers)):  # Waehlt eine linke Zahl aus.
         for right_index in range(left_index + 1, len(numbers)):  # Waehlt jede rechts davon stehende Zahl aus.
-            if numbers[left_index] > numbers[right_index]:  # Prueft die falsche Reihenfolge.
+            if numbers[left_index] > numbers[right_index]:  # Prueft, ob die linke Zahl groesser ist als die rechte
                 inversion_count = inversion_count + 1  # Zaehlt die Inversion.
 
     is_even = (inversion_count % 2 == 0)  # Prueft, ob die Zahl der Inversionen gerade ist.
@@ -316,7 +316,7 @@ def main():  # Steuert die Erzeugung, die Suche und die statistische Auswertung.
     # WICHTIG: KEIN random.seed(42)!
     # Bei jedem Programmstart entsteht normalerweise eine neue Zufallsfolge.
 
-    goal_board = (1, 2, 3, 4, 5, 6, 7, 8, 0)  # Legt die Zielanordnung fest.
+    goal_board = (0, 1, 2, 3, 4, 5, 6, 7, 8)  # Legt die Zielanordnung fest.
     goal_state = PuzzleState(goal_board)  # Erstellt das Zielobjekt.
     number_of_runs = 100  # Legt die Anzahl der Testpuzzles pro Heuristik fest.
     start_states = []  # Hier sammeln wir alle 100 zufaelligen Startzustaende.
