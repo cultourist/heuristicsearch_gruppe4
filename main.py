@@ -122,7 +122,7 @@ def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (0,1,2,3,4,5,6,7,8).
 
     for left_index in range(len(numbers)):  # Waehlt eine linke Zahl aus.
         for right_index in range(left_index + 1, len(numbers)):  # Waehlt jede rechts davon stehende Zahl aus.
-            if numbers[left_index] > numbers[right_index]:  # Prueft, ob die linke Zahl groesser ist als die rechte
+            if numbers[left_index] > numbers[right_index]:  # Prueft, ob die linke Zahl groesser ist als die rechte (= Inversion)
                 inversion_count = inversion_count + 1  # Zaehlt die Inversion.
 
     is_even = (inversion_count % 2 == 0)  # Prueft, ob die Zahl der Inversionen gerade ist.
@@ -313,8 +313,7 @@ def save_measurements_csv(rows, filename):  # Speichert die einzelnen Suchlaeufe
 
 def main():  # Steuert die Erzeugung, die Suche und die statistische Auswertung.
 
-    # WICHTIG: KEIN random.seed(42)!
-    # Bei jedem Programmstart entsteht normalerweise eine neue Zufallsfolge.
+    # Kein fester Seed: Bei jedem Programmstart entstehen neue zufaellige Startzustaende.
 
     goal_board = (0, 1, 2, 3, 4, 5, 6, 7, 8)  # Legt die Zielanordnung fest.
     goal_state = PuzzleState(goal_board)  # Erstellt das Zielobjekt.
@@ -407,7 +406,7 @@ def main():  # Steuert die Erzeugung, die Suche und die statistische Auswertung.
     # 9.5 EINEN ZUFAELLIGEN LOESUNGSWEG ANZEIGEN
     # --------------------------------------------------------
 
-    example_board = start_states[0].board  # WICHTIG: Nimmt das erste zufaellige Puzzle, kein festes Beispiel.
+    example_board = start_states[0].board  # Zeigt den Loesungsweg exemplarisch am ersten der zufaelligen Startzustaende.
     example_start = PuzzleState(example_board)  # Erstellt ein frisches Objekt fuer die Ausgabe.
     print("\nZufaelliger Startzustand fuer den angezeigten Loesungsweg:", example_board)  # Zeigt das Start-Tuple.
     example_result = solve_puzzle(example_start, goal_state, calculate_manhattan_distance)  # Loest dieses Puzzle mit A*.
