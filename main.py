@@ -1,7 +1,7 @@
 """8-Puzzle mit A*-Suche, Manhattan- und Hamming-Heuristik.
 
 Die 100 Startzustaende sind bei jedem Programmstart neu zufaellig erzeugt.
-Jedes Startpuzzle wird auf Loesbarkeit geprueft, und Duplikate werden entfernt.
+Jedes Startpuzzle wird auf Loesbarkeit geprueft und Duplikate werden entfernt.
 Beide Heuristiken erhalten die gleichen 100 Startzustaende.
 """
 
@@ -20,8 +20,17 @@ comparison_counter = 0  # Zaehlt die Objektvergleiche der Priority Queue.
 # ============================================================
 
 class PuzzleState:  # Definiert die Eigenschaften und Methoden eines Spielzustands.
+    """Funktion: Beschreibt einen Zustand des 8-Puzzles und dient als Knoten der Suche.
+    Input/Output: siehe __init__, get_neighbor_states, __lt__
+    """
 
     def __init__(self, board_tuple, g_cost=0, parent=None):  # Erstellt einen neuen Spielzustand.
+        """Funktion: Legt einen neuen Spielzustand an und sucht die Position der Leerstelle.
+        Input: board_tuple (Tuple mit 9 Zahlen von 0 bis 8),
+               g_cost (int, bisherige Kosten, Standard 0),
+               parent (PuzzleState des Vorgaengers oder None)
+        Output: keiner (initialisiert das Objekt; h_cost und f_cost setzt spaeter solve_puzzle)
+        """
         self.board = board_tuple  # Speichert die neun Felder als Tuple.
         self.empty_index = self.board.index(0)  # Sucht die Position der Leerstelle.
         self.g_cost = g_cost  # Speichert die bisherigen Kosten vom Start.
@@ -30,6 +39,10 @@ class PuzzleState:  # Definiert die Eigenschaften und Methoden eines Spielzustan
         self.parent = parent  # Verweist auf den vorherigen Zustand.
 
     def get_neighbor_states(self):  # Erzeugt alle Nachfolger durch genau einen Zug.
+        """Funktion: Verschiebt die Leerstelle in alle erlaubten Richtungen und erzeugt so die Nachfolger.
+        Input: keiner (verwendet self.board, self.empty_index und self.g_cost)
+        Output: Liste von PuzzleState-Objekten (zw. 2 bis 4 Objekten)
+        """
         neighbors = []  # Erstellt eine leere Liste fuer die Nachfolger.
         empty_row = self.empty_index // 3  # Berechnet die Zeile der Leerstelle.
         empty_column = self.empty_index % 3  # Berechnet die Spalte der Leerstelle.
@@ -55,6 +68,10 @@ class PuzzleState:  # Definiert die Eigenschaften und Methoden eines Spielzustan
         return neighbors  # Gibt alle gueltigen Nachfolger zurueck.
 
     def __lt__(self, other):  # Vergleicht zwei Objekte fuer die Priority Queue.
+        """Funktion: Vergleichsregel fuer die Priority Queue; zaehlt jeden Vergleich im comparison_counter.
+        Input: other (anderer PuzzleState)
+        Output: bool (True wenn self vor other kommt)
+        """
         global comparison_counter  # Erlaubt das Aendern des globalen Vergleichszaehlers.
         comparison_counter = comparison_counter + 1  # Zaehlt einen weiteren Vergleich.
 
@@ -69,6 +86,11 @@ class PuzzleState:  # Definiert die Eigenschaften und Methoden eines Spielzustan
 # ============================================================
 
 def calculate_manhattan_distance(state_board, goal_board):  # Berechnet die Schaetzung der Restkosten.
+    """Funktion: Manhattan-Heuristik, Summe der Zeilen- und Spaltenabstaende aller Steine zu ihrer Zielposition.
+    Input: state_board (Tuple mit 9 Zahlen, aktuelles Brett)
+           goal_board (Tuple mit 9 Zahlen, Zielbrett)
+    Output: int (geschaetzte Restkosten (die Leerstelle zaehlt nicht mit))
+    """
     total_distance = 0  # Startet die Summe bei null.
 
     for index in range(9):  # Untersucht die neun Felder nacheinander.
@@ -93,6 +115,11 @@ def calculate_manhattan_distance(state_board, goal_board):  # Berechnet die Scha
 # ============================================================
 
 def calculate_misplaced_tiles(state_board, goal_board):  # Zaehlt falsch platzierte Steine.
+    """Funktion: Hamming-Heuristik, zaehlt die Steine, die nicht auf ihrer Zielposition liegen.
+    Input: state_board (Tuple mit 9 Zahlen, aktuelles Brett)
+           goal_board (Tuple mit 9 Zahlen, Zielbrett)
+    Output: int (Anzahl der Steine an falscher Stelle (die Leerstelle zaehlt nicht mit))
+    """
     misplaced_count = 0  # Startet den Zaehler bei null.
 
     for index in range(9):  # Prueft jede Position des Spielfelds.
@@ -112,6 +139,11 @@ def calculate_misplaced_tiles(state_board, goal_board):  # Zaehlt falsch platzie
 # ============================================================
 
 def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (0,1,2,3,4,5,6,7,8).
+    """Funktion: Prueft ueber die Inversionen, ob das Puzzle loesbar ist. Eine Inversion ist ein Paar, bei dem eine groessere Zahl links von einer kleineren steht (0 wird ignoriert).
+                 Bei einem 3x3-Feld ist die Anordnung genau dann loesbar, wenn die Zahl der Inversionen gerade ist.
+    Input: board (Liste oder Tuple mit 9 Zahlen von 0 bis 8)
+    Output: bool (True wenn das Puzzle loesbar ist)
+    """
     numbers = []  # Speichert alle Zahlen ohne die Leerstelle.
 
     for tile in board:  # Geht die neun Werte durch.
@@ -134,6 +166,10 @@ def is_board_solvable(board):  # Gilt fuer das 3x3-Ziel (0,1,2,3,4,5,6,7,8).
 # ============================================================
 
 def generate_random_solvable_state():  # Liefert ein neues PuzzleState-Objekt.
+    """Funktion: Mischt die Zahlen 0 bis 8 so lange, bis die Anordnung loesbar ist.
+    Input: keiner
+    Output: PuzzleState mit zufaelligem, loesbarem Brett (g_cost = 0, parent = None)
+    """
     while True:  # Wiederholt den Versuch, bis das Puzzle loesbar ist.
         board_list = list(range(9))  # Erzeugt eine Liste mit den Zahlen 0 bis 8.
         random.shuffle(board_list)  # Mischt die Zahlen neu.
@@ -149,6 +185,17 @@ def generate_random_solvable_state():  # Liefert ein neues PuzzleState-Objekt.
 # ============================================================
 
 def solve_puzzle(start_state, goal_state, heuristic_function):  # Findet den kuerzesten Weg zum Ziel.
+    """Funktion: A*-Suche. Holt immer den offenen Knoten mit dem kleinsten f = g + h aus der Priority Queue
+           und expandiert ihn. Die Suche endet, sobald der Zielzustand entnommen wird.
+    Input: start_state (PuzzleState, Startbrett),
+           goal_state (PuzzleState, Zielbrett),
+           heuristic_function (Funktion mit (state_board, goal_board) -> int)
+    Output: Dictionary mit
+                success (bool), comparisons (int, Vergleiche in der Priority Queue),
+                expanded_nodes (int, Zahl der expandierten Knoten),
+                stored_entries (int, groesste Summe aus Queue und besuchten Boards),
+                final_state (PuzzleState des Ziels mit parent-Kette, bei Misserfolg None)
+        """
     global comparison_counter  # Greift auf den globalen Vergleichszaehler zu.
     comparison_counter = 0  # Setzt den Vergleichszaehler fuer diesen Lauf zurueck.
     start_state.h_cost = heuristic_function(start_state.board, goal_state.board)  # Bewertet den Startzustand.
@@ -218,6 +265,10 @@ def solve_puzzle(start_state, goal_state, heuristic_function):  # Findet den kue
 # ============================================================
 
 def reconstruct_solution_path(final_state):  # Erstellt eine Liste vom Start bis zum Ziel.
+    """Funktion: Folgt den parent-Verweisen vom Ziel zurueck zum Start und dreht die Reihenfolge um.
+    Input:  final_state (PuzzleState des Zielbretts)
+    Output: Liste von PuzzleState-Objekten von Startbrett bis Zielbrett
+    """
     path = []  # Erstellt eine leere Liste fuer den Pfad.
     current_state = final_state  # Beginnt beim gefundenen Zielzustand.
 
@@ -230,6 +281,10 @@ def reconstruct_solution_path(final_state):  # Erstellt eine Liste vom Start bis
 
 
 def print_solution_path(final_state):  # Zeigt den Pfad als 3x3-Spielbretter an.
+    """Funktion: Gibt den Loesungsweg Schritt fuer Schritt als 3x3-Raster aus.
+    Input:  final_state (PuzzleState des Zielbretts)
+    Output: keiner (Ausgabe in Konsole)
+    """
     path = reconstruct_solution_path(final_state)  # Holt den vollstaendigen Loesungsweg.
     number_of_moves = len(path) - 1  # Ermittelt die Anzahl der Bewegungen.
     print("\nLoesungspfad:", number_of_moves, "Bewegungen")  # Gibt die Pfadlaenge aus.
@@ -265,6 +320,10 @@ def print_solution_path(final_state):  # Zeigt den Pfad als 3x3-Spielbretter an.
 # ============================================================
 
 def create_result_lists():  # Erzeugt leere Listen fuer die Messgroessen.
+    """Funktion: Legt fuer eine Heuristik leere Listen fuer alle Messgroessen an.
+    Input: keiner
+    Output: Dictionary mit leeren Listen fuer runtime_seconds, expanded_nodes, stored_entries, comparisons, moves
+    """
     measurements = {}  # Erstellt ein leeres Dictionary.
     measurements["runtime_seconds"] = []  # Hier speichern wir Laufzeiten in Sekunden.
     measurements["expanded_nodes"] = []  # Hier speichern wir expandierte Knoten.
@@ -275,6 +334,10 @@ def create_result_lists():  # Erzeugt leere Listen fuer die Messgroessen.
 
 
 def print_statistics(results):  # Berechnet Mittelwert und Standardabweichung.
+    """Funktion: Berechnet je Heuristik und Messgroesse Mittelwert und Stichproben-Standardabweichung.
+    Input: results (Dictionary {Heuristikname: Dictionary mit den Messwertlisten})
+    Output: keiner (Ausgabe in Konsole)
+    """
     print("\nERGEBNISSE: 100 Startzustaende je Heuristik")  # Gibt die Tabellenueberschrift aus.
 
     for heuristic_name in results:  # Geht alle Heuristiken durch.
@@ -299,6 +362,11 @@ def print_statistics(results):  # Berechnet Mittelwert und Standardabweichung.
 
 
 def save_measurements_csv(rows, filename):  # Speichert die einzelnen Suchlaeufe als CSV.
+    """Funktion: Schreibt alle Einzelmessungen in eine CSV-Datei.
+    Input:  rows (Liste von Zeilen, je Suchlauf eine Liste mit Heuristik, Lauf, Startbrett und Messwerten),
+            filename (str, Pfad der CSV-Datei)
+    Output: keiner (erstellt Datei)
+    """
     with open(filename, "w", newline="", encoding="utf-8") as file:  # Oeffnet die CSV-Datei zum Schreiben.
         writer = csv.writer(file, delimiter=";")  # Erstellt den CSV-Schreiber mit Semikolon.
         writer.writerow(["heuristic", "run", "start_board", "runtime_seconds", "expanded_nodes", "stored_entries", "comparisons", "moves", "success"])  # Schreibt die Ueberschriften.
@@ -312,6 +380,13 @@ def save_measurements_csv(rows, filename):  # Speichert die einzelnen Suchlaeufe
 # ============================================================
 
 def main():  # Steuert die Erzeugung, die Suche und die statistische Auswertung.
+    """Funktion: Steuert den Ablauf. Erzeugt 100 verschiedene loesbare Startzustaende, loest sie mit beiden
+                Heuristiken, vergleicht die Loesungslaengen, gibt die Statistik aus, speichert die CSV-Datei
+                und zeigt einen Beispielweg. Bricht mit RuntimeError ab, wenn ein Puzzle nicht geloest wird
+                oder die Heuristiken unterschiedliche Loesungslaengen liefern.
+    Input:    keiner
+    Output:   keiner (Konsolenausgabe und die CSV-Datei wird erstellt)
+    """
 
     # Kein fester Seed: Bei jedem Programmstart entstehen neue zufaellige Startzustaende.
 
